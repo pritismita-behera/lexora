@@ -70,3 +70,9 @@ To provide a **simple, accessible, and efficient digital library** that makes it
 - 📖 **Simple** — Easy to navigate and use
 - 🌐 **Accessible** — Access learning resources anytime
 - ⚡ **Efficient** — Quick and organized resource discovery
+
+## Our Team
+    - Pritismita
+    - Jagruti
+    - Priyanka
+    - Tasneem
