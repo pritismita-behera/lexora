@@ -72,7 +72,7 @@ To provide a **simple, accessible, and efficient digital library** that makes it
 - ⚡ **Efficient** — Quick and organized resource discovery
 
 ## Our Team
-    - Pritismita
-    - Jagruti
-    - Priyanka
-    - Tasneem
+    - Pritismita👧
+    - Jagruti👧
+    - Priyanka👧
+    - Tasneem👧
