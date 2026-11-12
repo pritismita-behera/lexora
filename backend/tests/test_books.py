@@ -79,8 +79,8 @@ def test_copy_counts_and_status_are_validated(client):
 
 
 def test_author_publisher_and_category_references(client):
-    from models import Author, Category, Publisher
-    from database import get_db
+    from domain.models import Author, Category, Publisher
+    from core.database import get_db
 
     session_override = client.app.dependency_overrides[get_db]
     db_generator = session_override()

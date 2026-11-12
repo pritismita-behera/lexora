@@ -11,9 +11,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from database import Base, get_db
+from core.database import Base, get_db
 from main import app
-import models  # noqa: F401 - register models with Base metadata
+import domain.models as models  # noqa: F401 - register models with Base metadata
 
 
 @pytest.fixture

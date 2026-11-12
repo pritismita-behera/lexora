@@ -5,13 +5,19 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
+from core.audit import current_actor_id
+from core.auth import decode_access_token
 
 from api.books import router as books_router
 from api.authors import router as authors_router
 from api.publishers import router as publishers_router
 from api.categories import router as categories_router
-from database import Base, engine
-import models  # noqa: F401 - register all models before table creation
+from api.users import router as users_router
+from api.issues import router as issues_router
+from api.auth import router as auth_router, ensure_development_admin
+from core.database import SessionLocal
+from core.database import Base, engine, ensure_audit_columns
+import domain.models as models  # noqa: F401 - register all models before table creation
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,6 +31,9 @@ async def lifespan(app: FastAPI):
     if auto_create_tables:
         logger.info("Checking Lexora database tables")
         Base.metadata.create_all(bind=engine)
+        ensure_audit_columns()
+        with SessionLocal() as db:
+            ensure_development_admin(db)
         logger.info("Lexora database tables are ready")
         with engine.connect() as connection:
             database, host, port, user = connection.execute(
@@ -59,12 +68,26 @@ app.include_router(books_router, prefix="/api/v1")
 app.include_router(authors_router, prefix="/api/v1")
 app.include_router(publishers_router, prefix="/api/v1")
 app.include_router(categories_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
+app.include_router(issues_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1")
 
 
 @app.middleware("http")
 async def log_requests(request, call_next):
     logger.info("Request started: %s %s", request.method, request.url.path)
-    response = await call_next(request)
+    actor_token = current_actor_id.set(None)
+    authorization = request.headers.get("Authorization", "")
+    if authorization.lower().startswith("bearer "):
+        try:
+            claims = decode_access_token(authorization[7:].strip())
+            current_actor_id.set(int(claims["sub"]))
+        except Exception:
+            current_actor_id.set(None)
+    try:
+        response = await call_next(request)
+    finally:
+        current_actor_id.reset(actor_token)
     logger.info(
         "Request completed: %s %s -> %s",
         request.method,
