@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import Publisher
-from schemas import PublisherCreate, PublisherRead
+from core.database import get_db
+from domain.models import Publisher
+from domain.schemas import PublisherCreate, PublisherRead
 
 router = APIRouter(prefix="/publishers", tags=["publishers"])
 

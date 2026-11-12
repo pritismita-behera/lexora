@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from database import get_db
-from schemas import BookCreate, BookRead, BookUpdate
+from core.database import get_db
+from domain.schemas import BookCreate, BookRead, BookUpdate
 from services import books as book_service
 
 router = APIRouter(prefix="/books", tags=["books"])

@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import Book
-from schemas import BookCreate, BookUpdate
+from domain.models import Book
+from domain.schemas import BookCreate, BookUpdate
 
 
 def list_books(db: Session, *, skip: int = 0, limit: int = 100, search: str | None = None):

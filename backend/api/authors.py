@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import Author
-from schemas import AuthorCreate, AuthorRead
+from core.database import get_db
+from domain.models import Author
+from domain.schemas import AuthorCreate, AuthorRead
 
 router = APIRouter(prefix="/authors", tags=["authors"])
 

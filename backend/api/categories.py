@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import Category
-from schemas import CategoryCreate, CategoryRead
+from core.database import get_db
+from domain.models import Category
+from domain.schemas import CategoryCreate, CategoryRead
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
