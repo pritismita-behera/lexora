@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import Pagination from './Pagination'
 
 const API = 'http://127.0.0.1:8000/api/v1'
 type Kind = 'authors' | 'publishers' | 'categories'
@@ -19,6 +20,10 @@ export default function ReferenceManager({ kind, onNotify }: { kind: Kind; onNot
   const [editing, setEditing] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<'name' | 'id'>('name')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   const load = async () => {
     setLoading(true)
@@ -31,6 +36,7 @@ export default function ReferenceManager({ kind, onNotify }: { kind: Kind; onNot
   }
 
   useEffect(() => { void load() }, [kind])
+  useEffect(() => { setPage(1) }, [query, sort, kind])
   const reset = () => { setName(''); setDetail(''); setEditing(null) }
   const save = async (event: FormEvent) => {
     event.preventDefault(); setError('')
@@ -49,10 +55,15 @@ export default function ReferenceManager({ kind, onNotify }: { kind: Kind; onNot
     onNotify('success', `${meta.singular} deleted successfully.`)
     await load()
   }
+  const visibleItems = [...items]
+    .filter(item => kind !== 'categories' || `${item.name} ${item.detail ?? ''}`.toLowerCase().includes(query.toLowerCase()))
+    .sort((left, right) => sort === 'id' ? left.id - right.id : left.name.localeCompare(right.name))
+  const pagedItems = visibleItems.slice((page - 1) * pageSize, page * pageSize)
   return <section>
     <div className="page-intro"><div><p className="eyebrow">REFERENCE DATA</p><h2>{meta.label}</h2><p>Create and manage records used by books.</p></div></div>
     {error && <div className="alert">⚠ {error}<button onClick={() => setError('')}>×</button></div>}
     <div className="panel reference-editor"><form onSubmit={save} className="reference-form"><label>{meta.singular[0].toUpperCase() + meta.singular.slice(1)} name<input required value={name} onChange={event => setName(event.target.value)} placeholder={`Enter ${meta.singular} name`} /></label><label>{kind === 'authors' ? 'Biography' : kind === 'publishers' ? 'Address' : 'Description'}<input value={detail} onChange={event => setDetail(event.target.value)} placeholder="Optional details" /></label><div><button className="button primary">{editing ? 'Save changes' : `Add ${meta.singular}`}</button>{editing && <button type="button" className="button secondary" onClick={reset}>Cancel</button>}</div></form></div>
-    <div className="panel table-panel reference-table">{loading ? <p className="muted">Loading...</p> : <table><thead><tr><th>ID</th><th>Name</th><th>Details</th><th /></tr></thead><tbody>{items.map(item => <tr key={item.id}><td>{item.id}</td><td><strong>{item.name}</strong></td><td>{item.detail || '—'}</td><td><div className="row-actions"><button onClick={() => { setEditing(item.id); setName(item.name); setDetail(item.detail ?? '') }}>Edit</button><button onClick={() => void remove(item)}>Delete</button></div></td></tr>)}</tbody></table>}{!loading && !items.length && <p className="empty">No {meta.label.toLowerCase()} have been added.</p>}</div>
+    {kind === 'categories' && <div className="toolbar reference-toolbar"><div className="search">⌕<input placeholder="Search categories" value={query} onChange={event => setQuery(event.target.value)} /></div><label className="sort-control">Sort<select value={sort} onChange={event => setSort(event.target.value as 'name' | 'id')}><option value="name">Name</option><option value="id">ID</option></select></label></div>}
+    <div className="panel table-panel reference-table">{loading ? <p className="muted">Loading...</p> : <table><thead><tr><th>ID</th><th>Name</th><th>Details</th><th /></tr></thead><tbody>{pagedItems.map(item => <tr key={item.id}><td>{item.id}</td><td><strong>{item.name}</strong></td><td>{item.detail || '—'}</td><td><div className="row-actions"><button onClick={() => { setEditing(item.id); setName(item.name); setDetail(item.detail ?? '') }}>Edit</button><button onClick={() => void remove(item)}>Delete</button></div></td></tr>)}</tbody></table>}{!loading && !visibleItems.length && <p className="empty">No {meta.label.toLowerCase()} match your search.</p>}{!loading && <Pagination page={page} pageSize={pageSize} total={visibleItems.length} onPageChange={setPage} onPageSizeChange={setPageSize}/>}</div>
   </section>
 }
