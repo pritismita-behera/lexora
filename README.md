@@ -10,6 +10,7 @@ discover, read, borrow, and manage books and digital learning resources.
 -   🔐 User registration and login
 -   🔎 Search and browse books
 -   📖 Read and borrow books
+-   📖 Notice management
 -   🔖 My Library
 -   📅 Book reservations
 -   💰 Fine management
@@ -72,7 +73,7 @@ To provide a **simple, accessible, and efficient digital library** that makes it
 - ⚡ **Efficient** — Quick and organized resource discovery
 
 ## Our Team
-    - Pritismita👧 
+    - Pritismita👧
     - Jagruti👧
     - Priyanka👧
-    - Tasneem👧 
+    - Tasneem👧
