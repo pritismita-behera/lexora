@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, event
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
@@ -134,3 +134,29 @@ class BookIssue(AuditMixin, Base):
     due_date: Mapped[date] = mapped_column(Date, nullable=False)
     return_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="issued")
+
+
+class Notice(AuditMixin, Base):
+    __tablename__ = "notices"
+
+    notice_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
+    is_important: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
+
+    @property
+    def status(self) -> str:
+        now = datetime.utcnow()
+        if self.expires_at is not None and self.expires_at <= now:
+            return "expired"
+        if self.is_published:
+            if self.scheduled_at is not None and self.scheduled_at > now:
+                return "scheduled"
+            return "published"
+        if self.scheduled_at is not None and self.scheduled_at > now:
+            return "scheduled"
+        return "draft"

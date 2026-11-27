@@ -1,7 +1,13 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+def _to_naive_utc(value: datetime | None) -> datetime | None:
+    if value is None or value.tzinfo is None:
+        return value
+    return value.astimezone(timezone.utc).replace(tzinfo=None)
 
 
 class BookFields(BaseModel):
@@ -162,6 +168,76 @@ class AdminRead(BaseModel):
     name: str
     email: str
     role: str
+    status: str
+    created_by: int | None = None
+    updated_by: int | None = None
+    created_date: datetime
+    updated_date: datetime
+
+
+class NoticeBase(BaseModel):
+    scheduled_at: datetime | None = None
+    expires_at: datetime | None = None
+
+    @field_validator("scheduled_at", "expires_at", mode="after")
+    @classmethod
+    def normalize_datetime(cls, value: datetime | None) -> datetime | None:
+        return _to_naive_utc(value)
+
+    @model_validator(mode="after")
+    def validate_schedule_and_expiry(self):
+        if self.scheduled_at is not None and self.expires_at is not None and self.expires_at <= self.scheduled_at:
+            raise ValueError("Expiry date must be after the scheduled publication date.")
+        return self
+
+
+class NoticeCreate(NoticeBase):
+    title: str = Field(min_length=1, max_length=255)
+    content: str = Field(min_length=1)
+    is_published: bool = False
+    is_important: bool = False
+
+
+class NoticeUpdate(NoticeBase):
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    content: str | None = Field(default=None, min_length=1)
+    is_published: bool | None = None
+    is_important: bool | None = None
+
+
+class NoticeScheduleUpdate(BaseModel):
+    scheduled_at: datetime | None = None
+
+    @field_validator("scheduled_at", mode="after")
+    @classmethod
+    def normalize_datetime(cls, value: datetime | None) -> datetime | None:
+        return _to_naive_utc(value)
+
+
+class NoticeExpiryUpdate(BaseModel):
+    expires_at: datetime | None = None
+
+    @field_validator("expires_at", mode="after")
+    @classmethod
+    def normalize_datetime(cls, value: datetime | None) -> datetime | None:
+        return _to_naive_utc(value)
+
+
+class NoticeImportantUpdate(BaseModel):
+    is_important: bool
+
+
+class NoticeRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    notice_id: int
+    title: str
+    content: str
+    is_published: bool
+    published_at: datetime | None = None
+    scheduled_at: datetime | None = None
+    is_important: bool
+    expires_at: datetime | None = None
     status: str
     created_by: int | None = None
     updated_by: int | None = None

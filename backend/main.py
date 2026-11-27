@@ -14,6 +14,7 @@ from api.publishers import router as publishers_router
 from api.categories import router as categories_router
 from api.users import router as users_router
 from api.issues import router as issues_router
+from api.notices import router as notices_router
 from api.auth import router as auth_router, ensure_development_admin
 from core.database import SessionLocal
 from core.database import Base, engine, ensure_audit_columns
@@ -70,6 +71,7 @@ app.include_router(publishers_router, prefix="/api/v1")
 app.include_router(categories_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(issues_router, prefix="/api/v1")
+app.include_router(notices_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 
 

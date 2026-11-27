@@ -40,7 +40,7 @@ def ensure_audit_columns() -> None:
         # SQLite test databases are recreated from metadata, so no ALTER is
         # needed and SQLite's timestamp defaults vary between versions.
         return
-    for table in ("books", "authors", "publishers", "categories", "users", "admins", "book_issues"):
+    for table in ("books", "authors", "publishers", "categories", "users", "admins", "book_issues", "notices"):
         if not inspector.has_table(table):
             continue
         existing = {column["name"] for column in inspector.get_columns(table)}
